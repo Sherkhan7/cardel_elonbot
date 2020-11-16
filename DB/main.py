@@ -204,7 +204,8 @@ def get_cargo_by_id(cargo_id):
 def get_user_cargoes(id):
     with closing(get_connection()) as connection:
         with connection.cursor() as cursor:
-            sql = f"SELECT * FROM testdb.{cargoes_table_name} WHERE user_id = %s or user_tg_id = %s ORDER BY id DESC"
+            sql = f"SELECT * FROM testdb.{cargoes_table_name} WHERE user_id = %s or user_tg_id = %s " \
+                  f"ORDER BY state DESC, id DESC"
             cursor.execute(sql, (id, id))
             cargoes = cursor.fetchall()
 
@@ -223,6 +224,5 @@ def update_cargo_status(cargo_id, status):
         value = 'updated'
 
     return value
-
 
 # pprint(get_user_cargoes(2))

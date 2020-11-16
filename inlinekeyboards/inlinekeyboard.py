@@ -286,6 +286,9 @@ class InlineKeyboard(object):
         button1_text = inline_keyboard_types[confirm_keyboard][lang][0]
         button2_text = inline_keyboard_types[confirm_keyboard][lang][1]
 
+        button1_text = f'\U00002705 {button1_text}'
+        button2_text = f'\U0000270F {button2_text}'
+
         inline_keyboard.append([
             InlineKeyboardButton(button1_text, callback_data='confirm'),
 
