@@ -1,0 +1,5 @@
+.idea/
+*.json
+config/
+__pycache__/
+DB/test.py
