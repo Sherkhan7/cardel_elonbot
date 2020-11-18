@@ -2,7 +2,7 @@ from telegram import Update, ParseMode
 from telegram.ext import MessageHandler, ConversationHandler, CallbackQueryHandler, CallbackContext, Filters
 from inlinekeyboards import InlineKeyboard
 from buttonsdatadict import BUTTONS_DATA_DICT
-from helpers import set_user_data_in_bot_data
+from helpers import set_user_data
 from layouts import wrap_tags, get_user_info_layout
 from DB import update_user_info
 from languages import LANGS
@@ -23,7 +23,7 @@ def change_data_callback(update: Update, context: CallbackContext):
     bot_data = context.bot_data
 
     # set bot_data[update.effective_user.id] -> dict
-    set_user_data_in_bot_data(update.effective_user.id, bot_data)
+    set_user_data(update.effective_user.id, bot_data)
     user = bot_data[update.effective_user.id]
 
     if data == BUTTONS_DATA_DICT[3] or data == BUTTONS_DATA_DICT[4]:

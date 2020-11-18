@@ -3,8 +3,7 @@ from telegram import Update
 from inlinekeyboards import InlineKeyboard
 from layouts import get_new_cargo_layout, get_user_info_layout
 from replykeyboards import ReplyKeyboard
-from helpers import set_user_data_in_bot_data
-from pprint import pprint
+from helpers import set_user_data
 from DB import get_user_cargoes
 from languages import LANGS
 from replykeyboards.replykeyboardtypes import reply_keyboard_types
@@ -16,23 +15,16 @@ from globalvariables import *
 def message_handler_callback(update: Update, context: CallbackContext):
     # with open('jsons/update.json', 'w') as update_file:
     #     update_file.write(update.to_json())
+    user_data = context.user_data
+    set_user_data(update.effective_user.id, user_data)
+    user = user_data['user_data']
+
     full_text = update.message.text
     text = full_text.split(' ', 1)[-1]
-
-    bot_data = context.bot_data
-    chat_data = context.chat_data
-
-    # set bot_data[update.effective_user.id] -> dict
-    set_user_data_in_bot_data(update.effective_user.id, bot_data)
-    user = bot_data[update.effective_user.id]
-    pprint(bot_data)
 
     if user:
 
         if text == reply_keyboard_types[menu_keyboard][user[LANG]][3]:
-
-            client_cargoes = get_user_cargoes(user[TG_ID])
-            length = len(client_cargoes)
 
             if user[LANG] == LANGS[0]:
                 reply_text = "Sizda hali e'lonlar mavjud emas"
@@ -46,11 +38,13 @@ def message_handler_callback(update: Update, context: CallbackContext):
             reply_text = f'\U0001F615 {reply_text}'
             inline_keyboard = None
 
-            if length > 0:
-                chat_data['client_cargoes'] = client_cargoes
-                wanted = 1
+            user_cargoes = get_user_cargoes(user[TG_ID])
 
-                wanted_cargo_data = client_cargoes[wanted - 1]
+            if len(user_cargoes) > 0:
+                user_data['user_cargoes'] = user_cargoes
+
+                wanted = 1
+                wanted_cargo_data = user_cargoes[wanted - 1]
 
                 shipping_datetime = wanted_cargo_data['shipping_datetime']
                 wanted_cargo_data[DATE] = shipping_datetime.strftime('%d-%m-%Y')
@@ -61,7 +55,7 @@ def message_handler_callback(update: Update, context: CallbackContext):
 
                 reply_text = get_new_cargo_layout(wanted_cargo_data, user[LANG])
                 inline_keyboard = InlineKeyboard(paginate_keyboard, user[LANG],
-                                                 data=(wanted, length, client_cargoes)).get_keyboard()
+                                                 data=(wanted, user_cargoes)).get_keyboard()
 
             update.message.reply_html(reply_text, reply_markup=inline_keyboard)
 

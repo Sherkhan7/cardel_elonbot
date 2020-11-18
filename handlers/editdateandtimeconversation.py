@@ -12,16 +12,16 @@ def edit_date_and_time_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back' or data == 'now':
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
         answer = None
 
         if data == 'now':
-            user_input_data[DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
-            user_input_data[TIME] = 'now'
+            user_data[USER_INPUT_DATA][DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA][TIME] = 'now'
 
             if user[LANG] == LANGS[0]:
                 answer = "Kun va vaqt tahrirlandi"
@@ -34,22 +34,22 @@ def edit_date_and_time_callback(update: Update, context: CallbackContext):
 
             answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         state = 'edit'
 
     if data == 'today' or data == 'tomorrow' or data == 'after_tomorrow':
 
         if data == 'today':
-            user_input_data['new_date'] = datetime.datetime.now().strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA]['new_date'] = datetime.datetime.now().strftime('%d-%m-%Y')
 
         if data == 'tomorrow':
             tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
-            user_input_data['new_date'] = tomorrow.strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA]['new_date'] = tomorrow.strftime('%d-%m-%Y')
 
         if data == 'after_tomorrow':
             after_tomorrow = datetime.datetime.now() + datetime.timedelta(days=2)
-            user_input_data['new_date'] = after_tomorrow.strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA]['new_date'] = after_tomorrow.strftime('%d-%m-%Y')
 
         if user[LANG] == LANGS[0]:
             text = "Soatni belgilang"
@@ -75,12 +75,12 @@ def edit_date_and_time_callback(update: Update, context: CallbackContext):
 
     callback_query.answer(answer)
 
-    if user_input_data[PHOTO]:
+    if user_data[USER_INPUT_DATA][PHOTO]:
         callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
     else:
         callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
     return state
 
 
@@ -88,8 +88,8 @@ def edit_hour_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back_btn' or data == 'next_btn' or data == 'back':
 
@@ -105,7 +105,7 @@ def edit_hour_callback(update: Update, context: CallbackContext):
         button_text = f'« {button_text}'
 
         if data == 'back':
-            user_input_data.pop('new_date')
+            user_data[USER_INPUT_DATA].pop('new_date')
 
             inline_keyboard = InlineKeyboard(dates_keyboard, user[LANG]).get_keyboard()
             inline_keyboard['inline_keyboard'].append([InlineKeyboardButton(button_text, callback_data='back')])
@@ -121,12 +121,12 @@ def edit_hour_callback(update: Update, context: CallbackContext):
                 inline_keyboard = InlineKeyboard(hours_keyboard, user[LANG], begin=6, end=17).get_keyboard()
                 inline_keyboard['inline_keyboard'].append([InlineKeyboardButton(button_text, callback_data='back')])
 
-            state = user_input_data[STATE]
+            state = user_data[USER_INPUT_DATA][STATE]
 
         callback_query.answer()
         callback_query.edit_message_reply_markup(inline_keyboard)
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
         return state
 
     else:
@@ -143,20 +143,20 @@ def edit_hour_callback(update: Update, context: CallbackContext):
         answer = f'\U0001F44F\U0001F44F\U0001F44F {answer}'
         callback_query.answer(answer)
 
-        user_input_data[TIME] = data
-        user_input_data[DATE] = user_input_data.pop('new_date')
+        user_data[USER_INPUT_DATA][TIME] = data
+        user_data[USER_INPUT_DATA][DATE] = user_data[USER_INPUT_DATA].pop('new_date')
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 

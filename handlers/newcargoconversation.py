@@ -4,7 +4,7 @@ from telegram.ext import MessageHandler, ConversationHandler, CallbackQueryHandl
 from buttonsdatadict import BUTTONS_DATA_DICT
 from filters import phone_number_filter
 from handlers.editconversation import edit_conversation_handler
-from helpers import set_user_data_in_bot_data, wrap_tags
+from helpers import set_user_data, wrap_tags
 from inlinekeyboards import InlineKeyboard
 from DB import insert_cargo, get_cargo_by_id
 from layouts import get_new_cargo_layout, get_phone_number_layout
@@ -26,20 +26,17 @@ logger = logging.getLogger()
 
 
 def new_cargo_callback(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    set_user_data(update.effective_user.id, user_data)
+    user = user_data['user_data']
+
     callback_query = update.callback_query
-
-    user_input_data = context.user_data
-    bot_data = context.bot_data
-
-    # set bot_data[update.effective_user.id] -> dict
-    set_user_data_in_bot_data(update.effective_user.id, bot_data)
-    user = bot_data[update.effective_user.id]
 
     if callback_query:
         # print(callback_query.data)
-        cargo_id = callback_query.data.split('_')[0]
-
+        cargo_id = int(callback_query.data.split('_')[0])
         cargo_data = get_cargo_by_id(cargo_id)
+
         cargo_data[USERNAME] = user[USERNAME]
         cargo_data[NAME] = user[NAME]
         cargo_data[SURNAME] = user[SURNAME]
@@ -90,7 +87,8 @@ def new_cargo_callback(update: Update, context: CallbackContext):
         cargo_data[MESSAGE_ID] = message.message_id
         cargo_data[STATE] = CONFIRMATION
 
-        user_input_data.update(cargo_data)
+        user_data[USER_INPUT_DATA] = dict()
+        user_data[USER_INPUT_DATA].update(cargo_data)
 
         return CONFIRMATION
 
@@ -116,13 +114,13 @@ def new_cargo_callback(update: Update, context: CallbackContext):
 
             state = FROM_REGION
 
-            user_input_data[STATE] = state
-            user_input_data[USER_ID] = user[ID]
-            user_input_data[USER_TG_ID] = user[TG_ID]
-            user_input_data[USERNAME] = user[USERNAME]
-            user_input_data[NAME] = user[NAME]
-            user_input_data[SURNAME] = user[SURNAME]
-            user_input_data[MESSAGE_ID] = message.message_id
+            user_data[USER_INPUT_DATA][STATE] = state
+            user_data[USER_INPUT_DATA][USER_ID] = user[ID]
+            user_data[USER_INPUT_DATA][USER_TG_ID] = user[TG_ID]
+            user_data[USER_INPUT_DATA][USERNAME] = user[USERNAME]
+            user_data[USER_INPUT_DATA][NAME] = user[NAME]
+            user_data[USER_INPUT_DATA][SURNAME] = user[SURNAME]
+            user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
             return state
 
@@ -157,12 +155,12 @@ def from_region_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     region_id = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
-    user_input_data[FROM_REGION] = region_id
+    user_data[USER_INPUT_DATA][FROM_REGION] = region_id
 
-    logger.info('new_cargo_info: %s', user_input_data)
+    logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
     if user[LANG] == LANGS[0]:
         text = 'Qayerdan (Tumanni tanlang)'
@@ -181,7 +179,7 @@ def from_region_callback(update: Update, context: CallbackContext):
     callback_query.edit_message_text(text, reply_markup=inline_keyboard)
 
     state = FROM_DISTRICT
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -193,8 +191,8 @@ def from_district_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == BUTTONS_DATA_DICT[6]:
 
@@ -216,9 +214,9 @@ def from_district_callback(update: Update, context: CallbackContext):
 
     else:
 
-        user_input_data[FROM_DISTRICT] = data
+        user_data[USER_INPUT_DATA][FROM_DISTRICT] = data
 
-        logger.info('new_cargo_info: %s', user_input_data)
+        logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             edit_message_text = "Geolokatsiyangizni yuboring"
@@ -249,7 +247,7 @@ def from_district_callback(update: Update, context: CallbackContext):
         state = FROM_LOCATION
 
     callback_query.answer()
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -259,26 +257,26 @@ def from_location_callback(update: Update, context: CallbackContext):
     #     update_file.write(update.to_json())
     text = update.message.text
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if update.message.location or text == '\U000027A1':
 
         if text == '\U000027A1':
 
-            user_input_data[FROM_LOCATION] = None
+            user_data[USER_INPUT_DATA][FROM_LOCATION] = None
 
         else:
 
             longitude = update.message.location.longitude
             latitude = update.message.location.latitude
 
-            user_input_data[FROM_LOCATION] = {
+            user_data[USER_INPUT_DATA][FROM_LOCATION] = {
                 'longitude': longitude,
                 'latitude': latitude
             }
 
-        logger.info('new_cargo_info: %s', user_input_data)
+        logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             text_2 = "Qayerga (Viloyatni tanlang)"
@@ -298,8 +296,8 @@ def from_location_callback(update: Update, context: CallbackContext):
         message = update.message.reply_text(text_2, reply_markup=inline_keyboard)
 
         state = TO_REGION
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     else:
 
@@ -318,7 +316,7 @@ def from_location_callback(update: Update, context: CallbackContext):
         error_text = '\U000026A0 ' + error_text
         update.message.reply_text(error_text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     return state
 
@@ -327,12 +325,12 @@ def to_region_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     region_id = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
-    user_input_data[TO_REGION] = region_id
+    user_data[USER_INPUT_DATA][TO_REGION] = region_id
 
-    logger.info('new_cargo_info: %s', user_input_data)
+    logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
     if user[LANG] == LANGS[0]:
         text = "Qayerga (Tumanni tanlang)"
@@ -351,7 +349,7 @@ def to_region_callback(update: Update, context: CallbackContext):
     callback_query.edit_message_text(text, reply_markup=inline_keyboard)
 
     state = TO_DISTRICT
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -362,8 +360,8 @@ def to_district_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == BUTTONS_DATA_DICT[6]:
 
@@ -385,9 +383,9 @@ def to_district_callback(update: Update, context: CallbackContext):
 
     else:
 
-        user_input_data[TO_DISTRICT] = data
+        user_data[USER_INPUT_DATA][TO_DISTRICT] = data
 
-        logger.info('new_cargo_info: %s', user_input_data)
+        logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             text = "Yukni jo'natish geolokatsiyasini yuboring\n\n" \
@@ -406,7 +404,7 @@ def to_district_callback(update: Update, context: CallbackContext):
         callback_query.edit_message_text(text, reply_markup=get_skip_keyboard(state))
 
     callback_query.answer()
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -414,8 +412,8 @@ def to_district_callback(update: Update, context: CallbackContext):
 def to_location_callback(update: Update, context: CallbackContext):
     # with open('jsons/update.json', 'w') as update_file:
     #     update_file.write(update.to_json())
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if not update.message.location:
 
@@ -435,19 +433,19 @@ def to_location_callback(update: Update, context: CallbackContext):
 
         update.message.reply_text(error_text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
         longitude = update.message.location.longitude
         latitude = update.message.location.latitude
 
-        user_input_data[TO_LOCATION] = {
+        user_data[USER_INPUT_DATA][TO_LOCATION] = {
             'longitude': longitude,
             'latitude': latitude
         }
 
-        logger.info('new_cargo_info: %s', user_input_data)
+        logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             text = "Yuk og'irligini tanlang:\n\n" \
@@ -464,12 +462,12 @@ def to_location_callback(update: Update, context: CallbackContext):
         inline_keyboard = InlineKeyboard(weights_keyboard, user[LANG]).get_keyboard()
         inline_keyboard['inline_keyboard'].append([InlineKeyboardButton('\U000027A1', callback_data='skip_weight')])
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
         message = update.message.reply_text(text, reply_markup=inline_keyboard)
 
         state = WEIGHT_UNIT
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -479,12 +477,12 @@ def cargo_weight_unit_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'skip_weight':
-        user_input_data[WEIGHT_UNIT] = None
-        user_input_data[WEIGHT] = None
+        user_data[USER_INPUT_DATA][WEIGHT_UNIT] = None
+        user_data[USER_INPUT_DATA][WEIGHT] = None
 
         if user[LANG] == LANGS[0]:
             weight = "noma'lum"
@@ -510,11 +508,11 @@ def cargo_weight_unit_callback(update: Update, context: CallbackContext):
         state = VOLUME
 
         message = callback_query.message.reply_text(text, reply_markup=get_skip_keyboard(state))
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     else:
 
-        user_input_data[WEIGHT_UNIT] = data
+        user_data[USER_INPUT_DATA][WEIGHT_UNIT] = data
 
         if user[LANG] == LANGS[0]:
             edit_text = "Yuk og'irligini yuboring (raqamda)"
@@ -531,18 +529,18 @@ def cargo_weight_unit_callback(update: Update, context: CallbackContext):
 
         callback_query.edit_message_text(edit_text)
 
-    logger.info('use_input_data: %s', user_input_data)
+    logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
     callback_query.answer()
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
     return state
 
 
 def cargo_weight_callback(update: Update, context: CallbackContext):
     error_text = update.message.text
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if not error_text.isdigit():
 
@@ -558,13 +556,13 @@ def cargo_weight_callback(update: Update, context: CallbackContext):
         error_text = f'\U000026A0 {error_text} !'
         update.message.reply_text(error_text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
-        user_input_data[WEIGHT] = error_text
+        user_data[USER_INPUT_DATA][WEIGHT] = error_text
 
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             error_text = "Yuk hajmini yuboring (raqamda):\n\n" \
@@ -582,8 +580,8 @@ def cargo_weight_callback(update: Update, context: CallbackContext):
 
         message = update.message.reply_text(error_text, reply_markup=get_skip_keyboard(state))
 
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -591,8 +589,8 @@ def cargo_weight_callback(update: Update, context: CallbackContext):
 def cargo_volume_callback(update: Update, context: CallbackContext):
     text = update.message.text
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if not text.isdigit():
 
@@ -611,14 +609,14 @@ def cargo_volume_callback(update: Update, context: CallbackContext):
         error_text = '\U000026A0 ' + error_text
         update.message.reply_text(error_text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
-        user_input_data[VOLUME] = text
-        user_input_data[VOLUME_UNIT] = 'm3'
+        user_data[USER_INPUT_DATA][VOLUME] = text
+        user_data[USER_INPUT_DATA][VOLUME_UNIT] = 'm3'
 
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             text = "Yuk tavsifini yuboring:\n\n" \
@@ -634,11 +632,11 @@ def cargo_volume_callback(update: Update, context: CallbackContext):
 
         state = DEFINITION
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
         message = update.message.reply_text(text, reply_markup=get_skip_keyboard(state))
 
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -646,10 +644,10 @@ def cargo_volume_callback(update: Update, context: CallbackContext):
 def cargo_definition_callback(update: Update, context: CallbackContext):
     text = update.message.text
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
-    user_input_data[DEFINITION] = text
+    user_data[USER_INPUT_DATA][DEFINITION] = text
 
     if text == '/cancel':
 
@@ -664,10 +662,10 @@ def cargo_definition_callback(update: Update, context: CallbackContext):
 
         cancel_text = f'\U0000274C {cancel_text} !'
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
         update.message.reply_text(cancel_text, quote=True)
 
-        user_input_data.clear()
+        del user_data[USER_INPUT_DATA]
         return ConversationHandler.END
 
     if text == '/menu' or text == '/start':
@@ -687,11 +685,11 @@ def cargo_definition_callback(update: Update, context: CallbackContext):
         text = f'\U000026A0 ' + warning_text
         update.message.reply_text(text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         if user[LANG] == LANGS[0]:
             text = "Yuk rasmini yuboring:\n\n" \
@@ -707,11 +705,11 @@ def cargo_definition_callback(update: Update, context: CallbackContext):
 
         state = PHOTO
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
         message = update.message.reply_text(text, reply_markup=get_skip_keyboard(state))
 
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -719,8 +717,8 @@ def cargo_definition_callback(update: Update, context: CallbackContext):
 def cargo_photo_callback(update: Update, context: CallbackContext):
     # with open('jsons/update.json', 'w') as update_file:
     #     update_file.write(update.to_json())
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     cargo_photo = update.message.photo
 
@@ -745,11 +743,11 @@ def cargo_photo_callback(update: Update, context: CallbackContext):
 
         update.message.reply_text(error_text, quote=True)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
-        user_input_data[PHOTO] = cargo_photo[-1].to_dict()
+        user_data[USER_INPUT_DATA][PHOTO] = cargo_photo[-1].to_dict()
 
         if user[LANG] == LANGS[0]:
             text = "Yukni jo'natish kunini belgilang"
@@ -764,13 +762,13 @@ def cargo_photo_callback(update: Update, context: CallbackContext):
 
         inline_keyboard = InlineKeyboard(dates_keyboard, user[LANG]).get_keyboard()
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
         message = update.message.reply_text(text, reply_markup=inline_keyboard)
 
         state = DATE
 
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -779,13 +777,13 @@ def date_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'now':
 
-        user_input_data[DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
-        user_input_data[TIME] = 'now'
+        user_data[USER_INPUT_DATA][DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
+        user_data[USER_INPUT_DATA][TIME] = 'now'
 
         phone_number_layout = get_phone_number_layout(user[LANG])
 
@@ -801,7 +799,7 @@ def date_callback(update: Update, context: CallbackContext):
         reply_text = phone_number_layout
 
         callback_query.edit_message_text(edit_text)
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         reply_keyboard = ReplyKeyboard(phone_number_keyboard, user[LANG]).get_keyboard()
         callback_query.message.reply_html(reply_text, reply_markup=reply_keyboard)
@@ -811,15 +809,15 @@ def date_callback(update: Update, context: CallbackContext):
     if data == 'today' or data == 'tomorrow' or data == 'after_tomorrow':
 
         if data == 'today':
-            user_input_data[DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA][DATE] = datetime.datetime.now().strftime('%d-%m-%Y')
 
         if data == 'tomorrow':
             tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
-            user_input_data[DATE] = tomorrow.strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA][DATE] = tomorrow.strftime('%d-%m-%Y')
 
         if data == 'after_tomorrow':
             after_tomorrow = datetime.datetime.now() + datetime.timedelta(days=2)
-            user_input_data[DATE] = after_tomorrow.strftime('%d-%m-%Y')
+            user_data[USER_INPUT_DATA][DATE] = after_tomorrow.strftime('%d-%m-%Y')
 
         if user[LANG] == LANGS[0]:
             edit_text = "Soatni belgilang"
@@ -839,7 +837,7 @@ def date_callback(update: Update, context: CallbackContext):
 
     callback_query.answer()
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -848,8 +846,8 @@ def hour_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'next_btn' or data == 'back_btn':
 
@@ -861,11 +859,11 @@ def hour_callback(update: Update, context: CallbackContext):
 
         callback_query.edit_message_reply_markup(inline_keyboard)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     else:
 
-        user_input_data[TIME] = data
+        user_data[USER_INPUT_DATA][TIME] = data
         phone_number_layout = get_phone_number_layout(user[LANG])
 
         if user[LANG] == LANGS[0]:
@@ -880,14 +878,14 @@ def hour_callback(update: Update, context: CallbackContext):
         reply_text = phone_number_layout
 
         callback_query.edit_message_text(edit_text)
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         reply_keyboard = ReplyKeyboard(phone_number_keyboard, user[LANG]).get_keyboard()
         callback_query.message.reply_html(reply_text, reply_markup=reply_keyboard)
 
         state = USER_PHONE_NUMBER
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     callback_query.answer()
     return state
@@ -899,8 +897,8 @@ def phone_number_callback(update: Update, context: CallbackContext):
     text = update.message.text
     contact = update.message.contact
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if contact:
         phone_number = phone_number_filter(contact.phone_number)
@@ -910,25 +908,25 @@ def phone_number_callback(update: Update, context: CallbackContext):
 
     if phone_number:
 
-        user_input_data[USER_PHONE_NUMBER] = phone_number
+        user_data[USER_INPUT_DATA][USER_PHONE_NUMBER] = phone_number
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-        inline_keyboard = InlineKeyboard(confirm_keyboard, user[LANG], data=user_input_data).get_keyboard()
+        inline_keyboard = InlineKeyboard(confirm_keyboard, user[LANG], data=user_data[USER_INPUT_DATA]).get_keyboard()
 
         update.message.reply_text('\U0001F447\U0001F447\U0001F447', reply_markup=ReplyKeyboardRemove())
 
-        if user_input_data[PHOTO]:
-            message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                                  reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
-        logger.info('use_input_data: %s', user_input_data)
+        logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
         state = CONFIRMATION
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     else:
 
@@ -947,7 +945,7 @@ def phone_number_callback(update: Update, context: CallbackContext):
         update.message.reply_text(error_text, quote=True)
         update.message.reply_html(phone_number_layout)
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
     return state
 
@@ -956,10 +954,10 @@ def confirmation_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
-    logger.info('user_input_data: %s', user_input_data)
+    logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
     if data == 'confirm':
 
@@ -974,57 +972,47 @@ def confirmation_callback(update: Update, context: CallbackContext):
 
         text = f'\U00002705 {text} !'
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data[MESSAGE_ID])
-
-        user_input_data[STATE] = 'opened'
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
-        layout_2 = get_new_cargo_layout(user_input_data, 'cy')
-
-        if user_input_data[FROM_LOCATION] or user_input_data[TO_LOCATION]:
-            inline_keyboard = InlineKeyboard(confirm_keyboard, lang='cy', data=user_input_data,
+        if user_data[USER_INPUT_DATA][FROM_LOCATION] or user_data[USER_INPUT_DATA][TO_LOCATION]:
+            inline_keyboard = InlineKeyboard(confirm_keyboard, lang='cy', data=user_data[USER_INPUT_DATA],
                                              geolocation=True).get_keyboard()
         else:
             inline_keyboard = None
 
-        if user_input_data[PHOTO]:
-            message = context.bot.send_photo(GROUP_ID, user_input_data[PHOTO].get('file_id'),
+        user_data[USER_INPUT_DATA][STATE] = 'opened'
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
+        layout_2 = get_new_cargo_layout(user_data[USER_INPUT_DATA], 'cy')
+
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            message = context.bot.send_photo(GROUP_ID, user_data[USER_INPUT_DATA][PHOTO].get('file_id'),
                                              layout_2, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         else:
             message = context.bot.send_message(GROUP_ID, layout_2, reply_markup=inline_keyboard,
                                                parse_mode=ParseMode.HTML)
 
-        user_input_data[POST_ID] = message.message_id
-        user_input_data.pop(NAME)
-        user_input_data.pop(SURNAME)
-        user_input_data.pop(USERNAME)
-        insert_result = insert_cargo(dict(user_input_data))
+        user_data[USER_INPUT_DATA][POST_ID] = message.message_id
+        user_data[USER_INPUT_DATA].pop(NAME)
+        user_data[USER_INPUT_DATA].pop(SURNAME)
+        user_data[USER_INPUT_DATA].pop(USERNAME)
+        user_data[USER_INPUT_DATA].pop(MESSAGE_ID)
+        insert_result = insert_cargo(dict(user_data[USER_INPUT_DATA]))
 
         if insert_result:
             reply_keyboard = ReplyKeyboard(menu_keyboard, user[LANG]).get_keyboard()
             callback_query.message.reply_text(text, reply_markup=reply_keyboard)
 
-            if user_input_data[PHOTO]:
-                context.bot.edit_message_caption(user_input_data[USER_TG_ID], user_input_data[MESSAGE_ID],
-                                                 caption=layout, parse_mode=ParseMode.HTML)
-            else:
-                context.bot.edit_message_text(layout, user_input_data[USER_TG_ID], user_input_data[MESSAGE_ID],
-                                              parse_mode=ParseMode.HTML)
-
         else:
-            delete_value = context.bot.delete_message(GROUP_ID, user_input_data[POST_ID])
+            delete_value = context.bot.delete_message(GROUP_ID, user_data[USER_INPUT_DATA][POST_ID])
             print('IS MESSAGE DELETED FROM THE GROUP ? Answer: ', delete_value)
 
             layout = 'ERROR'
 
-            if user_input_data[PHOTO]:
-                context.bot.edit_message_caption(user_input_data[USER_TG_ID], user_input_data[MESSAGE_ID],
-                                                 caption=layout, parse_mode=ParseMode.HTML)
-            else:
-                context.bot.edit_message_text(layout, user_input_data[USER_TG_ID], user_input_data[MESSAGE_ID],
-                                              parse_mode=ParseMode.HTML)
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            callback_query.edit_message_caption(layout, parse_mode=ParseMode.HTML)
+        else:
+            callback_query.edit_message_text(layout, parse_mode=ParseMode.HTML)
 
-        user_input_data.clear()
+        del user_data[USER_INPUT_DATA]
         state = ConversationHandler.END
 
     if data == 'edit':
@@ -1036,7 +1024,7 @@ def confirmation_callback(update: Update, context: CallbackContext):
         callback_query.edit_message_reply_markup(inline_keyboard)
 
         state = EDIT
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
@@ -1044,10 +1032,10 @@ def confirmation_callback(update: Update, context: CallbackContext):
 def txt_callback(update: Update, context: CallbackContext):
     text = update.message.text
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
-    logger.info('user_inpt_data: %s', user_input_data)
+    logger.info('user_input_data: %s', user_data[USER_INPUT_DATA])
 
     if text == '/cancel':
 
@@ -1064,9 +1052,9 @@ def txt_callback(update: Update, context: CallbackContext):
         reply_keyboard = ReplyKeyboard(menu_keyboard, user[LANG]).get_keyboard()
 
         update.message.reply_text(cancel_text, reply_markup=reply_keyboard)
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
 
-        user_input_data.clear()
+        del user_data[USER_INPUT_DATA]
         return ConversationHandler.END
 
     else:
@@ -1083,7 +1071,7 @@ def txt_callback(update: Update, context: CallbackContext):
             warning_text = "Сизда тугалланмаган эълон мавжуд!\n\n" \
                            "Эълонни бекор қилиш учун /cancel ни юборинг"
 
-        if user_input_data[STATE] == CONFIRMATION:
+        if user_data[USER_INPUT_DATA][STATE] == CONFIRMATION:
 
             if user[LANG] == LANGS[0]:
                 confirm = wrap_tags("«Tasdiqlash»")
@@ -1107,7 +1095,7 @@ def txt_callback(update: Update, context: CallbackContext):
         warning_text = '\U000026A0 ' + warning_text
         update.message.reply_html(warning_text, quote=True)
 
-        return user_input_data[STATE]
+        return user_data[USER_INPUT_DATA][STATE]
 
 
 def get_skip_keyboard(state):
@@ -1138,12 +1126,12 @@ def skip_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'skip_to_location':
 
-        user_input_data[TO_LOCATION] = None
+        user_data[USER_INPUT_DATA][TO_LOCATION] = None
 
         if user[LANG] == LANGS[0]:
             location = "noma'lum"
@@ -1170,13 +1158,13 @@ def skip_callback(update: Update, context: CallbackContext):
         inline_keyboard['inline_keyboard'].append([InlineKeyboardButton('\U000027A1', callback_data='skip_weight')])
 
         message = callback_query.message.reply_text(text, reply_markup=inline_keyboard)
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
         state = WEIGHT_UNIT
 
     if data == 'skip_volume':
 
-        user_input_data[VOLUME] = None
+        user_data[USER_INPUT_DATA][VOLUME] = None
 
         if user[LANG] == LANGS[0]:
             volume = "noma'lum"
@@ -1202,11 +1190,11 @@ def skip_callback(update: Update, context: CallbackContext):
         state = DEFINITION
 
         message = callback_query.message.reply_text(reply_text, reply_markup=get_skip_keyboard(state))
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     if data == 'skip_definition':
 
-        user_input_data[DEFINITION] = None
+        user_data[USER_INPUT_DATA][DEFINITION] = None
 
         if user[LANG] == LANGS[0]:
             definition = "noma'lum"
@@ -1232,11 +1220,11 @@ def skip_callback(update: Update, context: CallbackContext):
         state = PHOTO
 
         message = callback_query.message.reply_text(reply_text, reply_markup=get_skip_keyboard(state))
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     if data == 'skip_photo':
 
-        user_input_data[PHOTO] = None
+        user_data[USER_INPUT_DATA][PHOTO] = None
 
         if user[LANG] == LANGS[0]:
             photo = "yuborilmagan"
@@ -1261,11 +1249,11 @@ def skip_callback(update: Update, context: CallbackContext):
         inline_keyboard = InlineKeyboard(dates_keyboard, user[LANG]).get_keyboard()
         message = callback_query.message.reply_text(reply_text, reply_markup=inline_keyboard)
 
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
         state = DATE
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
     return state
 
 

@@ -15,11 +15,11 @@ def get_new_cargo_layout(cargo_data, lang, hide_user_data=None):
 
     date = cargo_data[DATE]
     time = cargo_data[TIME]
-    client_name = cargo_data[NAME]
-    client_surname = cargo_data[SURNAME]
-    client_phone_number = cargo_data[USER_PHONE_NUMBER]
+    user_name = cargo_data[NAME]
+    user_surname = cargo_data[SURNAME]
+    user_phone_number = cargo_data[USER_PHONE_NUMBER]
 
-    weight = volume = definition = client_username = NEW_CARGO_LAYOUT_DICT[lang][UNDEFINED_TEXT]
+    weight = volume = definition = user_username = NEW_CARGO_LAYOUT_DICT[lang][UNDEFINED_TEXT]
 
     if cargo_data[WEIGHT]:
         weight = f'{cargo_data[WEIGHT]} {UNITS[lang][cargo_data[WEIGHT_UNIT]]}'
@@ -31,7 +31,7 @@ def get_new_cargo_layout(cargo_data, lang, hide_user_data=None):
         definition = cargo_data[DEFINITION]
 
     if cargo_data[USERNAME]:
-        client_username = f'@{cargo_data[USERNAME]}'
+        user_username = f'@{cargo_data[USERNAME]}'
 
     if cargo_data[STATE] == 'opened':
         status = NEW_CARGO_LAYOUT_DICT[lang][OPENED_STATUS]
@@ -55,9 +55,9 @@ def get_new_cargo_layout(cargo_data, lang, hide_user_data=None):
              f'\U0001F5D2  {NEW_CARGO_LAYOUT_DICT[lang][DEFINITION_TEXT]}: {wrap_tags(definition)}\n' \
              f'\U0001F4C6  {NEW_CARGO_LAYOUT_DICT[lang][DATE_TEXT]}: {wrap_tags(date)}\n' \
              f'\U0001F553  {NEW_CARGO_LAYOUT_DICT[lang][TIME_TEXT]}: {wrap_tags(time)}\n\n' \
-             f'\U0001F464  {NEW_CARGO_LAYOUT_DICT[lang][CLIENT_TEXT]}: {wrap_tags(client_name, client_surname)}\n' \
-             f"\U0001F4DE  {NEW_CARGO_LAYOUT_DICT[lang][CLIENT_PHONE_NUMBER_TEXT]}: {wrap_tags(client_phone_number)}\n" \
-             f"\U0001F170  {NEW_CARGO_LAYOUT_DICT[lang][TG_ACCOUNT_TEXT]}: {wrap_tags(client_username)}\n\n" \
+             f'\U0001F464  {NEW_CARGO_LAYOUT_DICT[lang][USER_TEXT]}: {wrap_tags(user_name, user_surname)}\n' \
+             f"\U0001F4DE  {NEW_CARGO_LAYOUT_DICT[lang][USER_PHONE_NUMBER_TEXT]}: {wrap_tags(user_phone_number)}\n" \
+             f"\U0001F170  {NEW_CARGO_LAYOUT_DICT[lang][TG_ACCOUNT_TEXT]}: {wrap_tags(user_username)}\n\n" \
              f"{emoji}  {NEW_CARGO_LAYOUT_DICT[lang][STATUS_TEXT]}: {wrap_tags(status)}\n\n" \
              f"\U0001F916  @cardel_elonbot \U000000A9\n" \
              f"\U0001F6E1  cardel online \U00002122"

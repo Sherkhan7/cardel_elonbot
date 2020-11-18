@@ -12,14 +12,14 @@ def edit_address_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back':
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     if data == 'edit_from_address' or data == 'edit_to_address':
 
@@ -55,7 +55,7 @@ def edit_address_callback(update: Update, context: CallbackContext):
         if data == 'edit_to_address':
             state = 'edit_to_address'
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     if data == 'edit_from_location':
 
@@ -84,7 +84,7 @@ def edit_address_callback(update: Update, context: CallbackContext):
         button2_text = '« ' + button2_text
         button3_text = f'«{button3_text}»'
 
-        if not user_input_data[FROM_LOCATION]:
+        if not user_data[USER_INPUT_DATA][FROM_LOCATION]:
 
             reply_keyboard = ReplyKeyboardMarkup([
                 [KeyboardButton(button1_text, request_location=True)],
@@ -102,11 +102,11 @@ def edit_address_callback(update: Update, context: CallbackContext):
                 [KeyboardButton(button2_text)]
             ], resize_keyboard=True)
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop('message_id'))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop('message_id'))
         callback_query.message.reply_text(text, reply_markup=reply_keyboard)
 
         state = 'edit_from_location'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -133,7 +133,7 @@ def edit_address_callback(update: Update, context: CallbackContext):
         button1_text = f'«{button1_text}»'
         button2_text = '« ' + button2_text
 
-        if not user_input_data['to_location']:
+        if not user_data[USER_INPUT_DATA]['to_location']:
 
             inline_keyboard = InlineKeyboardMarkup([
                 [InlineKeyboardButton(button2_text, callback_data='back')]
@@ -150,13 +150,13 @@ def edit_address_callback(update: Update, context: CallbackContext):
 
         callback_query.answer()
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(text, reply_markup=inline_keyboard)
         else:
             callback_query.edit_message_text(text, reply_markup=inline_keyboard)
 
         state = 'edit_to_location'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -169,15 +169,15 @@ def edit_region_or_district_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user = context.bot_data[update.effective_user.id]
-    user_input_data = context.user_data
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back':
         inline_keyboard = InlineKeyboard(edit_address_keyboard, user[LANG]).get_keyboard()
-        text = get_new_cargo_layout(user_input_data, user[LANG])
+        text = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         state = 'edit_address'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     if data == 'edit_region':
 
@@ -214,11 +214,11 @@ def edit_region_or_district_callback(update: Update, context: CallbackContext):
 
         text = f'{text} :'
 
-        if user_input_data[STATE] == 'edit_from_address':
-            region_id = user_input_data[FROM_REGION]
+        if user_data[USER_INPUT_DATA][STATE] == 'edit_from_address':
+            region_id = user_data[USER_INPUT_DATA][FROM_REGION]
 
-        elif user_input_data[STATE] == 'edit_to_address':
-            region_id = user_input_data[TO_REGION]
+        elif user_data[USER_INPUT_DATA][STATE] == 'edit_to_address':
+            region_id = user_data[USER_INPUT_DATA][TO_REGION]
 
         inline_keyboard = InlineKeyboard(districts_keyboard, user[LANG], region_id=region_id).get_keyboard()
 
@@ -226,7 +226,7 @@ def edit_region_or_district_callback(update: Update, context: CallbackContext):
 
     callback_query.answer()
 
-    if user_input_data[PHOTO]:
+    if user_data[USER_INPUT_DATA][PHOTO]:
         callback_query.edit_message_caption(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
     else:
         callback_query.edit_message_text(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
@@ -238,11 +238,11 @@ def edit_region_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back':
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         if user[LANG] == LANGS[0]:
             button1_text = "Viloyatni tahrirlash"
@@ -273,22 +273,22 @@ def edit_region_callback(update: Update, context: CallbackContext):
 
         callback_query.answer()
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-        return user_input_data[STATE]
+        return user_data[USER_INPUT_DATA][STATE]
 
     region_id = data
 
-    if user_input_data[STATE] == 'edit_from_address':
-        user_input_data['new_from_region'] = region_id
+    if user_data[USER_INPUT_DATA][STATE] == 'edit_from_address':
+        user_data[USER_INPUT_DATA]['new_from_region'] = region_id
 
-    if user_input_data[STATE] == 'edit_to_address':
-        user_input_data['new_to_region'] = region_id
+    if user_data[USER_INPUT_DATA][STATE] == 'edit_to_address':
+        user_data[USER_INPUT_DATA]['new_to_region'] = region_id
 
-    # logger.info('new_cargo_info: %s', user_input_data)
+    # logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
 
     callback_query.answer()
 
@@ -302,8 +302,8 @@ def edit_district_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if data == 'back_btn':
 
@@ -334,7 +334,7 @@ def edit_district_callback(update: Update, context: CallbackContext):
             ]
         ])
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
         answer = None
 
         if state == 'edit_from_address':
@@ -343,12 +343,12 @@ def edit_district_callback(update: Update, context: CallbackContext):
         elif state == 'edit_to_address':
             key = 'new_to_region'
 
-        if key in user_input_data.keys():
-            user_input_data.pop(key)
+        if key in user_data[USER_INPUT_DATA].keys():
+            user_data[USER_INPUT_DATA].pop(key)
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
@@ -357,13 +357,13 @@ def edit_district_callback(update: Update, context: CallbackContext):
 
         district_id = data
 
-        state = user_input_data[STATE]
+        state = user_data[USER_INPUT_DATA][STATE]
 
         if state == 'edit_from_address':
 
             new_key = 'new_from_region'
             key = FROM_REGION
-            user_input_data[FROM_DISTRICT] = district_id
+            user_data[USER_INPUT_DATA][FROM_DISTRICT] = district_id
 
             if user[LANG] == LANGS[0]:
                 answer = "Yuboruvchi manzili tahrirlandi"
@@ -378,7 +378,7 @@ def edit_district_callback(update: Update, context: CallbackContext):
 
             new_key = 'new_to_region'
             key = TO_REGION
-            user_input_data[TO_DISTRICT] = district_id
+            user_data[USER_INPUT_DATA][TO_DISTRICT] = district_id
 
             if user[LANG] == LANGS[0]:
                 answer = "Qabul qiluvchi manzili tahrirlandi"
@@ -391,19 +391,19 @@ def edit_district_callback(update: Update, context: CallbackContext):
 
         answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
 
-        if new_key in user_input_data.keys():
-            user_input_data[key] = user_input_data.pop(new_key)
+        if new_key in user_data[USER_INPUT_DATA].keys():
+            user_data[USER_INPUT_DATA][key] = user_data[USER_INPUT_DATA].pop(new_key)
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
         inline_keyboard = InlineKeyboard('edit_keyboard', user[LANG]).get_keyboard()
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     callback_query.answer(answer)
 
@@ -413,8 +413,8 @@ def edit_district_callback(update: Update, context: CallbackContext):
 def edit_from_location_callback(update: Update, context: CallbackContext):
     text = update.message.text
 
-    user = context.bot_data[update.effective_user.id]
-    user_input_data = context.user_data
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if user[LANG] == LANGS[0]:
         reply_text = "Yuboruvchi geolokatsiyasi tahrirlandi"
@@ -432,7 +432,7 @@ def edit_from_location_callback(update: Update, context: CallbackContext):
         longitude = update.message.location.longitude
         latitude = update.message.location.latitude
 
-        user_input_data[FROM_LOCATION] = {
+        user_data[USER_INPUT_DATA][FROM_LOCATION] = {
             'longitude': longitude,
             'latitude': latitude
         }
@@ -442,19 +442,19 @@ def edit_from_location_callback(update: Update, context: CallbackContext):
         inline_keyboard = InlineKeyboard('edit_keyboard', user[LANG]).get_keyboard()
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     elif text == "«Eski geolokatsiyamni o'chirish»" or text == '«Удалить мою старую геолокацию»' or \
             text == "«Ески геолокациямни ўчириш»":
 
-        user_input_data[FROM_LOCATION] = None
+        user_data[USER_INPUT_DATA][FROM_LOCATION] = None
 
         update.message.reply_text(reply_text, reply_markup=ReplyKeyboardRemove())
 
         inline_keyboard = InlineKeyboard('edit_keyboard', user[LANG]).get_keyboard()
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     elif text == "« Ortga" or text == "« Назад" or text == "« Ортга":
 
@@ -463,7 +463,7 @@ def edit_from_location_callback(update: Update, context: CallbackContext):
         inline_keyboard = InlineKeyboard(edit_address_keyboard, user[LANG]).get_keyboard()
 
         state = 'edit_address'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     else:
 
@@ -480,32 +480,32 @@ def edit_from_location_callback(update: Update, context: CallbackContext):
 
         update.message.reply_text(error_text, quote=True)
 
-        return user_input_data[STATE]
+        return user_data[USER_INPUT_DATA][STATE]
 
-    # logger.info('new_cargo_info: %s', user_input_data)
-    layout = get_new_cargo_layout(user_input_data, user[LANG])
+    # logger.info('new_cargo_info: %s', user_data[USER_INPUT_DATA])
+    layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-    if user_input_data[PHOTO]:
-        message = update.message.reply_photo(user_input_data[PHOTO]['file_id'], caption=layout,
+    if user_data[USER_INPUT_DATA][PHOTO]:
+        message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO]['file_id'], caption=layout,
                                              reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
     else:
         message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
-    user_input_data[MESSAGE_ID] = message.message_id
+    user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
 
 def edit_to_location_callback(update: Update, context: CallbackContext):
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     callback_query = update.callback_query
 
     if callback_query:
 
         data = callback_query.data
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         if data == 'back':
             inline_keyboard = InlineKeyboard(edit_address_keyboard, user[LANG]).get_keyboard()
@@ -514,7 +514,7 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
             state = 'edit_address'
 
         if data == 'delete':
-            user_input_data[TO_LOCATION] = None
+            user_data[USER_INPUT_DATA][TO_LOCATION] = None
 
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
@@ -533,12 +533,12 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
 
         callback_query.answer(answer)
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -549,7 +549,7 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
             longitude = update.message.location.longitude
             latitude = update.message.location.latitude
 
-            user_input_data[TO_LOCATION] = {
+            user_data[USER_INPUT_DATA][TO_LOCATION] = {
                 'longitude': longitude,
                 'latitude': latitude
             }
@@ -567,20 +567,20 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
 
             update.message.reply_text(answer)
 
-            layout = get_new_cargo_layout(user_input_data, user[LANG])
+            layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
-            context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop('message_id'))
+            context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop('message_id'))
 
-            if user_input_data[PHOTO]:
-                message = update.message.reply_photo(user_input_data[PHOTO]['file_id'], caption=layout,
+            if user_data[USER_INPUT_DATA][PHOTO]:
+                message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO]['file_id'], caption=layout,
                                                      reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
             else:
                 message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
             state = 'edit'
-            user_input_data[STATE] = state
-            user_input_data[MESSAGE_ID] = message.message_id
+            user_data[USER_INPUT_DATA][STATE] = state
+            user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
             return state
 
@@ -598,7 +598,7 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
             error_text = f'\U000026A0 {error_text} !'
             update.message.reply_text(error_text, quote=True)
 
-            return user_input_data[STATE]
+            return user_data[USER_INPUT_DATA][STATE]
 
 
 edit_address_conversation_handler = ConversationHandler(

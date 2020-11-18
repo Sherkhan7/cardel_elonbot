@@ -1,6 +1,6 @@
 from telegram.ext import Updater
 from config import TOKEN
-from handlers import (message_handler, inline_keyboard_handler, conversation_handler,
+from handlers import (message_handler, inline_keyboard_handler, registration_conversation_handler,
                       changedataconversation_handler, new_cargo_conversation_handler)
 
 
@@ -9,7 +9,7 @@ def main():
 
     updater.dispatcher.add_handler(new_cargo_conversation_handler)
 
-    updater.dispatcher.add_handler(conversation_handler)
+    updater.dispatcher.add_handler(registration_conversation_handler)
 
     updater.dispatcher.add_handler(changedataconversation_handler)
 

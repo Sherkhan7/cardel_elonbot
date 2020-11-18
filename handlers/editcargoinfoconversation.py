@@ -13,11 +13,11 @@ logger = logging.getLogger()
 
 
 def edit_cargo_info_callback(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    user = user_data['user_data']
+
     callback_query = update.callback_query
     data = callback_query.data
-
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
 
     if data == 'back':
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
@@ -26,7 +26,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
         callback_query.edit_message_reply_markup(inline_keyboard)
 
         state = 'edit'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -53,7 +53,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
         button4_text = '« ' + button4_text
         inline_keyboard = InlineKeyboard(weights_keyboard, user[LANG]).get_keyboard()
 
-        if user_input_data[WEIGHT]:
+        if user_data[USER_INPUT_DATA][WEIGHT]:
             inline_keyboard['inline_keyboard'].append([InlineKeyboardButton(button3_text, callback_data='delete')])
 
         else:
@@ -89,7 +89,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
             [InlineKeyboardButton(button4_text, callback_data='back')],
         ])
 
-        if user_input_data[VOLUME]:
+        if user_data[USER_INPUT_DATA][VOLUME]:
             inline_keyboard['inline_keyboard'].insert(0, [InlineKeyboardButton(button3_text, callback_data='delete')])
 
         else:
@@ -123,7 +123,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
             [InlineKeyboardButton(button4_text, callback_data='back')],
         ])
 
-        if user_input_data[DEFINITION]:
+        if user_data[USER_INPUT_DATA][DEFINITION]:
             inline_keyboard['inline_keyboard'].insert(0, [InlineKeyboardButton(button3_text, callback_data='delete')])
 
         else:
@@ -157,7 +157,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
             [InlineKeyboardButton(button4_text, callback_data='back')],
         ])
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             inline_keyboard['inline_keyboard'].insert(0, [InlineKeyboardButton(button3_text, callback_data='delete')])
 
         else:
@@ -166,7 +166,7 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
 
         state = 'edit_photo'
 
-    if data == 'edit_client_phone':
+    if data == 'edit_user_phone':
 
         phone_number_layout = get_phone_number_layout(user[LANG])
 
@@ -186,39 +186,39 @@ def edit_cargo_info_callback(update: Update, context: CallbackContext):
 
         text = phone_number_layout
 
-        state = 'edit_client_phone'
+        state = 'edit_user_phone'
 
     callback_query.answer()
 
-    if user_input_data[PHOTO]:
+    if user_data[USER_INPUT_DATA][PHOTO]:
         callback_query.edit_message_caption(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
     else:
         callback_query.edit_message_text(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
 
 def edit_weight_unit_callback(update: Update, context: CallbackContext):
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     callback_query = update.callback_query
     data = callback_query.data
 
     if data == 'back':
         inline_keyboard = InlineKeyboard(edit_cargo_info_keyboard, user[LANG]).get_keyboard()
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         answer = None
         state = 'edit_cargo_info'
 
     if data == 'delete':
-        user_input_data[WEIGHT] = None
+        user_data[USER_INPUT_DATA][WEIGHT] = None
 
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         if user[LANG] == LANGS[0]:
             answer = "Yuk og'irligi tahrirlandi"
@@ -233,7 +233,7 @@ def edit_weight_unit_callback(update: Update, context: CallbackContext):
         state = 'edit'
 
     if callback_query.data == 'kg' or callback_query.data == 't':
-        user_input_data['new_weight_unit'] = callback_query.data
+        user_data[USER_INPUT_DATA]['new_weight_unit'] = callback_query.data
 
         if user[LANG] == LANGS[0]:
             text = "Yangi yuk og'irligini yuboring (raqamda)"
@@ -261,19 +261,19 @@ def edit_weight_unit_callback(update: Update, context: CallbackContext):
 
     callback_query.answer(answer)
 
-    if user_input_data[PHOTO]:
+    if user_data[USER_INPUT_DATA][PHOTO]:
         callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
     else:
         callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
 
     return state
 
 
 def edit_weight_callback(update: Update, context: CallbackContext):
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     callback_query = update.callback_query
 
@@ -281,8 +281,8 @@ def edit_weight_callback(update: Update, context: CallbackContext):
 
         if callback_query.data == 'back':
 
-            if 'new_weight_unit' in user_input_data.keys():
-                user_input_data.pop('new_weight_unit')
+            if 'new_weight_unit' in user_data[USER_INPUT_DATA].keys():
+                user_data[USER_INPUT_DATA].pop('new_weight_unit')
 
             if user[LANG] == LANGS[0]:
                 button3_text = "Yuk og'irligini o'chirish"
@@ -305,7 +305,7 @@ def edit_weight_callback(update: Update, context: CallbackContext):
             button4_text = '« ' + button4_text
             inline_keyboard = InlineKeyboard(weights_keyboard, user[LANG]).get_keyboard()
 
-            if user_input_data[WEIGHT]:
+            if user_data[USER_INPUT_DATA][WEIGHT]:
                 inline_keyboard['inline_keyboard'].append([InlineKeyboardButton(button3_text, callback_data='delete')])
 
             else:
@@ -316,13 +316,13 @@ def edit_weight_callback(update: Update, context: CallbackContext):
 
             callback_query.answer()
 
-            if user_input_data[PHOTO]:
+            if user_data[USER_INPUT_DATA][PHOTO]:
                 callback_query.edit_message_caption(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
             else:
                 callback_query.edit_message_text(text, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
             state = 'edit_weight_unit'
-            user_input_data[STATE] = state
+            user_data[USER_INPUT_DATA][STATE] = state
 
             return state
 
@@ -344,13 +344,13 @@ def edit_weight_callback(update: Update, context: CallbackContext):
 
             update.message.reply_text(error_text, quote=True)
 
-            return user_input_data[STATE]
+            return user_data[USER_INPUT_DATA][STATE]
 
-        user_input_data[WEIGHT] = text
-        user_input_data[WEIGHT_UNIT] = user_input_data.pop('new_weight_unit')
+        user_data[USER_INPUT_DATA][WEIGHT] = text
+        user_data[USER_INPUT_DATA][WEIGHT_UNIT] = user_data[USER_INPUT_DATA].pop('new_weight_unit')
 
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         if user[LANG] == LANGS[0]:
             answer = "Yuk og'irligi tahrirlandi"
@@ -364,17 +364,17 @@ def edit_weight_callback(update: Update, context: CallbackContext):
         answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
 
         update.message.reply_text(answer)
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
 
-        if user_input_data[PHOTO]:
-            message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                                  reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
         state = 'edit'
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
         return state
 
@@ -382,8 +382,8 @@ def edit_weight_callback(update: Update, context: CallbackContext):
 def edit_volume_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if callback_query:
         data = callback_query.data
@@ -395,7 +395,7 @@ def edit_volume_callback(update: Update, context: CallbackContext):
             state = 'edit_cargo_info'
 
         if data == 'delete':
-            user_input_data[VOLUME] = None
+            user_data[USER_INPUT_DATA][VOLUME] = None
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
             if user[LANG] == LANGS[0]:
@@ -410,16 +410,16 @@ def edit_volume_callback(update: Update, context: CallbackContext):
             answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
             state = 'edit'
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         callback_query.answer(answer)
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -440,7 +440,7 @@ def edit_volume_callback(update: Update, context: CallbackContext):
             error_text = f'\U000026A0 {error_text} !'
             update.message.reply_text(error_text, quote=True)
 
-            return user_input_data[STATE]
+            return user_data[USER_INPUT_DATA][STATE]
 
         if user[LANG] == LANGS[0]:
             answer = "Yuk hajmi tahrirlandi"
@@ -455,20 +455,20 @@ def edit_volume_callback(update: Update, context: CallbackContext):
         update.message.reply_text(answer)
 
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
-        user_input_data[VOLUME] = text
+        user_data[USER_INPUT_DATA][VOLUME] = text
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
 
-        if user_input_data[PHOTO]:
-            message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                                  reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
         state = 'edit'
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
         return state
 
@@ -476,8 +476,8 @@ def edit_volume_callback(update: Update, context: CallbackContext):
 def edit_definition_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if callback_query:
         data = callback_query.data
@@ -488,7 +488,7 @@ def edit_definition_callback(update: Update, context: CallbackContext):
             state = 'edit_cargo_info'
 
         if data == 'delete':
-            user_input_data[DEFINITION] = None
+            user_data[USER_INPUT_DATA][DEFINITION] = None
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
             if user[LANG] == LANGS[0]:
@@ -503,16 +503,16 @@ def edit_definition_callback(update: Update, context: CallbackContext):
             answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
             state = 'edit'
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
         callback_query.answer(answer)
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
     else:
 
@@ -528,21 +528,21 @@ def edit_definition_callback(update: Update, context: CallbackContext):
         answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
         update.message.reply_text(answer)
 
-        user_input_data[DEFINITION] = update.message.text
+        user_data[USER_INPUT_DATA][DEFINITION] = update.message.text
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
 
-        if user_input_data[PHOTO]:
-            message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+        if user_data[USER_INPUT_DATA][PHOTO]:
+            message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                                  reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             message = update.message.reply_html(layout, reply_markup=inline_keyboard)
 
         state = 'edit'
-        user_input_data[STATE] = state
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][STATE] = state
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     return state
 
@@ -550,8 +550,8 @@ def edit_definition_callback(update: Update, context: CallbackContext):
 def edit_photo_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if callback_query:
         data = callback_query.data
@@ -561,16 +561,16 @@ def edit_photo_callback(update: Update, context: CallbackContext):
             answer = None
             state = 'edit_cargo_info'
 
-            layout = get_new_cargo_layout(user_input_data, user[LANG])
+            layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
             callback_query.answer(answer)
 
-            if user_input_data[PHOTO]:
+            if user_data[USER_INPUT_DATA][PHOTO]:
                 callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
             else:
                 callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         if data == 'delete':
-            user_input_data[PHOTO] = None
+            user_data[USER_INPUT_DATA][PHOTO] = None
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
             if user[LANG] == LANGS[0]:
@@ -585,13 +585,14 @@ def edit_photo_callback(update: Update, context: CallbackContext):
             answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
             callback_query.message.reply_text(answer)
 
-            layout = get_new_cargo_layout(user_input_data, user[LANG])
+            layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-            context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+            context.bot.edit_message_reply_markup(update.effective_chat.id,
+                                                  user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
             message = callback_query.message.reply_html(layout, reply_markup=inline_keyboard)
 
             state = 'edit'
-            user_input_data[MESSAGE_ID] = message.message_id
+            user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
     else:
 
@@ -612,9 +613,9 @@ def edit_photo_callback(update: Update, context: CallbackContext):
 
             update.message.reply_text(error_text, quote=True)
 
-            return user_input_data[STATE]
+            return user_data[USER_INPUT_DATA][STATE]
 
-        user_input_data[PHOTO] = cargo_photo[-1].to_dict()
+        user_data[USER_INPUT_DATA][PHOTO] = cargo_photo[-1].to_dict()
 
         if user[LANG] == LANGS[0]:
             answer = "Yuk rasmi tahrirlandi"
@@ -628,25 +629,25 @@ def edit_photo_callback(update: Update, context: CallbackContext):
         answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
         update.message.reply_text(answer)
 
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
         inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
-        context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
-        message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+        context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
+        message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                              reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
         state = 'edit'
-        user_input_data[MESSAGE_ID] = message.message_id
+        user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
     return state
 
 
-def edit_client_phone_callback(update: Update, context: CallbackContext):
+def edit_user_phone_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
 
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
+    user_data = context.user_data
+    user = user_data['user_data']
 
     if callback_query:
         data = callback_query.data
@@ -657,14 +658,14 @@ def edit_client_phone_callback(update: Update, context: CallbackContext):
             state = 'edit_cargo_info'
 
         callback_query.answer(answer)
-        layout = get_new_cargo_layout(user_input_data, user[LANG])
+        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
@@ -681,7 +682,7 @@ def edit_client_phone_callback(update: Update, context: CallbackContext):
 
         if phone_number:
 
-            user_input_data[USER_PHONE_NUMBER] = phone_number
+            user_data[USER_INPUT_DATA][USER_PHONE_NUMBER] = phone_number
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
             if user[LANG] == LANGS[0]:
@@ -696,19 +697,20 @@ def edit_client_phone_callback(update: Update, context: CallbackContext):
             answer = '\U0001F44F\U0001F44F\U0001F44F ' + answer
             update.message.reply_text(answer)
 
-            layout = get_new_cargo_layout(user_input_data, user[LANG])
+            layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
 
-            context.bot.edit_message_reply_markup(update.effective_chat.id, user_input_data.pop(MESSAGE_ID))
+            context.bot.edit_message_reply_markup(update.effective_chat.id,
+                                                  user_data[USER_INPUT_DATA].pop(MESSAGE_ID))
 
-            if user_input_data[PHOTO]:
-                message = update.message.reply_photo(user_input_data[PHOTO].get('file_id'), layout,
+            if user_data[USER_INPUT_DATA][PHOTO]:
+                message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO].get('file_id'), layout,
                                                      reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
             else:
                 message = update.message.reply_text(layout, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
 
             state = 'edit'
-            user_input_data[STATE] = state
-            user_input_data[MESSAGE_ID] = message.message_id
+            user_data[USER_INPUT_DATA][STATE] = state
+            user_data[USER_INPUT_DATA][MESSAGE_ID] = message.message_id
 
             return state
 
@@ -729,13 +731,13 @@ def edit_client_phone_callback(update: Update, context: CallbackContext):
             update.message.reply_text(error_text, quote=True)
             update.message.reply_html(phone_number_layout)
 
-            return user_input_data[STATE]
+            return user_data[USER_INPUT_DATA][STATE]
 
 
 edit_cargo_info_conversation_handler = ConversationHandler(
     entry_points=[CallbackQueryHandler(edit_cargo_info_callback,
                                        pattern='^(edit_weight|edit_volume|edit_definition'
-                                               '|edit_photo|edit_client_phone|back)$')],
+                                               '|edit_photo|edit_user_phone|back)$')],
     states={
         'edit_weight_unit': [CallbackQueryHandler(edit_weight_unit_callback, pattern='^(kg|t|delete|back)$')],
 
@@ -751,8 +753,8 @@ edit_cargo_info_conversation_handler = ConversationHandler(
         'edit_photo': [CallbackQueryHandler(edit_photo_callback, pattern='^(back|delete)$'),
                        MessageHandler(Filters.text & ~Filters.command | Filters.photo, edit_photo_callback)],
 
-        'edit_client_phone': [CallbackQueryHandler(edit_client_phone_callback, pattern='^(back|delete)$'),
-                              MessageHandler(Filters.text & ~Filters.command, edit_client_phone_callback)],
+        'edit_user_phone': [CallbackQueryHandler(edit_user_phone_callback, pattern='^(back|delete)$'),
+                            MessageHandler(Filters.text & ~Filters.command, edit_user_phone_callback)],
     },
     fallbacks=[],
 

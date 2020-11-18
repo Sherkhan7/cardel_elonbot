@@ -14,11 +14,11 @@ logger = logging.getLogger()
 
 
 def edit_callback(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    user = user_data['user_data']
+
     callback_query = update.callback_query
     data = callback_query.data
-
-    user_input_data = context.user_data
-    user = context.bot_data[update.effective_user.id]
 
     if data == 'edit_address':
         inline_keyboard = InlineKeyboard(edit_address_keyboard, user[LANG]).get_keyboard()
@@ -29,7 +29,7 @@ def edit_callback(update: Update, context: CallbackContext):
         state = 'edit_cargo_info'
 
     if data == 'terminate_editing':
-        inline_keyboard = InlineKeyboard(confirm_keyboard, user[LANG], data=user_input_data).get_keyboard()
+        inline_keyboard = InlineKeyboard(confirm_keyboard, user[LANG], data=user_data[USER_INPUT_DATA]).get_keyboard()
         state = 'confirmation'
 
     if data == 'edit_date_and_time':
@@ -54,20 +54,20 @@ def edit_callback(update: Update, context: CallbackContext):
 
         callback_query.answer()
 
-        if user_input_data[PHOTO]:
+        if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(text, reply_markup=inline_keyboard)
         else:
             callback_query.edit_message_text(text, reply_markup=inline_keyboard)
 
         state = 'edit_date_and_time'
-        user_input_data[STATE] = state
+        user_data[USER_INPUT_DATA][STATE] = state
 
         return state
 
     callback_query.answer()
     callback_query.edit_message_reply_markup(inline_keyboard)
 
-    user_input_data[STATE] = state
+    user_data[USER_INPUT_DATA][STATE] = state
     return state
 
 

@@ -365,7 +365,7 @@ class InlineKeyboard(object):
                 InlineKeyboardButton(button4_text, callback_data='edit_photo')
             ],
 
-            [InlineKeyboardButton(button5_text, callback_data='edit_client_phone')],
+            [InlineKeyboardButton(button5_text, callback_data='edit_user_phone')],
 
             [InlineKeyboardButton(button6_text, callback_data='back')],
 
@@ -374,8 +374,10 @@ class InlineKeyboard(object):
     @staticmethod
     def __get_paginate_keyboard(lang, data):
 
-        wanted, length, client_cargoes = data
-        wanted_cargo_data = client_cargoes[wanted - 1]
+        wanted, user_cargoes = data
+
+        length = len(user_cargoes)
+        wanted_cargo_data = user_cargoes[wanted - 1]
 
         close_text = inline_keyboard_types[paginate_keyboard][lang][0]
         open_text = inline_keyboard_types[paginate_keyboard][lang][1]
