@@ -1,20 +1,12 @@
 from DB import get_user
 
 
-def set_user_data_in_bot_data(user_id, bot_data):
-    if user_id not in bot_data.keys() or bot_data[user_id] is False:
+def set_user_data(user_id, user_data):
+    value = user_data.setdefault('user_data', None)
 
-        user = get_user(user_id)
-
-        if user:
-            user.pop('created_at')
-            user.pop('updated_at')
-
-            bot_data[user_id] = user
-
-        else:
-
-            bot_data[user_id] = False
+    if not value:
+        value = get_user(user_id)
+        user_data['user_data'] = value
 
 
 def wrap_tags(*args):
