@@ -49,9 +49,6 @@ def get_user(id):
                 cursor.execute(f"SELECT * FROM testdb.{users_table_name} WHERE tg_id = %s OR id = %s", (id, id))
                 record = cursor.fetchone()
 
-    if record is None:
-        return False
-
     return record
 
 
@@ -133,8 +130,6 @@ def get_region_and_district(region_id, district_id):
 def insert_cargo(cargo_data):
     # with open('jsons/cargo.json', 'w') as cargo:
     #     cargo.write(json.dumps(cargo_data, indent=4))
-    if cargo_data['message_id']:
-        cargo_data.pop('message_id')
 
     date = cargo_data.pop('date')
     time = cargo_data.pop('time')
