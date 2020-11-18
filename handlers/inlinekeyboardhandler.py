@@ -69,12 +69,11 @@ def main_inline_keyboard_callback(update: Update, context: CallbackContext):
 
             if return_value == 'updated':
 
-                if user_data['user_cargoes'][cargo_id]['photo_id']:
-                    context.bot.edit_message_caption(GROUP_ID, user_data['user_cargoes'][cargo_id][POST_ID],
-                                                     caption=layout_2, parse_mode=ParseMode.HTML)
+                if cargo_data['photo_id']:
+                    context.bot.edit_message_caption(GROUP_ID, cargo_data[POST_ID], caption=layout_2,
+                                                     parse_mode=ParseMode.HTML)
                 else:
-                    context.bot.edit_message_text(layout_2, GROUP_ID, user_data['user_cargoes'][cargo_id][POST_ID],
-                                                  parse_mode=ParseMode.HTML)
+                    context.bot.edit_message_text(layout_2, GROUP_ID, cargo_data[POST_ID], parse_mode=ParseMode.HTML)
 
     elif match_obj_2:
 
