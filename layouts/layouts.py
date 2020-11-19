@@ -48,31 +48,31 @@ def get_new_cargo_layout(cargo_data, lang, hide_user_data=None):
     if cargo_data[TIME] == 'now':
         time = NEW_CARGO_LAYOUT_DICT[lang][TIME]
 
-    layout = f'\U0001F4CD  {NEW_CARGO_LAYOUT_DICT[lang][FROM_TEXT]}: {wrap_tags(from_district_name, from_region_name)}\n' \
-             f'\U0001F3C1  {NEW_CARGO_LAYOUT_DICT[lang][TO_TEXT]}: {wrap_tags(to_district_name, to_region_name)}\n\n' \
-             f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][WEIGHT_TEXT]}: {wrap_tags(weight)}\n' \
-             f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][VOLUME_TEXT]}: {wrap_tags(volume)}\n' \
-             f'\U0001F5D2  {NEW_CARGO_LAYOUT_DICT[lang][DEFINITION_TEXT]}: {wrap_tags(definition)}\n' \
-             f'\U0001F4C6  {NEW_CARGO_LAYOUT_DICT[lang][DATE_TEXT]}: {wrap_tags(date)}\n' \
-             f'\U0001F553  {NEW_CARGO_LAYOUT_DICT[lang][TIME_TEXT]}: {wrap_tags(time)}\n\n' \
-             f'\U0001F464  {NEW_CARGO_LAYOUT_DICT[lang][USER_TEXT]}: {wrap_tags(user_name, user_surname)}\n' \
-             f"\U0001F4DE  {NEW_CARGO_LAYOUT_DICT[lang][USER_PHONE_NUMBER_TEXT]}: {wrap_tags(user_phone_number)}\n" \
-             f"\U0001F170  {NEW_CARGO_LAYOUT_DICT[lang][TG_ACCOUNT_TEXT]}: {wrap_tags(user_username)}\n\n" \
-             f"{emoji}  {NEW_CARGO_LAYOUT_DICT[lang][STATUS_TEXT]}: {wrap_tags(status)}\n\n" \
-             f"\U0001F916  @cardel_elonbot \U000000A9\n" \
-             f"\U0001F6E1  cardel online \U00002122"
+    layout = [
+        f'\U0001F4CD  {NEW_CARGO_LAYOUT_DICT[lang][FROM_TEXT]}: {wrap_tags(from_district_name, from_region_name)}',
+        f'\U0001F3C1  {NEW_CARGO_LAYOUT_DICT[lang][TO_TEXT]}: {wrap_tags(to_district_name, to_region_name)}\n',
+        f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][WEIGHT_TEXT]}: {wrap_tags(weight)}',
+        f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][VOLUME_TEXT]}: {wrap_tags(volume)}',
+        f'\U0001F5D2  {NEW_CARGO_LAYOUT_DICT[lang][DEFINITION_TEXT]}: {wrap_tags(definition)}',
+        f'\U0001F4C6  {NEW_CARGO_LAYOUT_DICT[lang][DATE_TEXT]}: {wrap_tags(date)}',
+        f'\U0001F553  {NEW_CARGO_LAYOUT_DICT[lang][TIME_TEXT]}: {wrap_tags(time)}\n',
+        f'\U0001F464  {NEW_CARGO_LAYOUT_DICT[lang][USER_TEXT]}: {wrap_tags(user_name, user_surname)}',
+        f'\U0001F4DE  {NEW_CARGO_LAYOUT_DICT[lang][USER_PHONE_NUMBER_TEXT]}: {wrap_tags(user_phone_number)}',
+        f'\U0001F170  {NEW_CARGO_LAYOUT_DICT[lang][TG_ACCOUNT_TEXT]}: {wrap_tags(user_username)}\n',
+        f'{emoji}  {NEW_CARGO_LAYOUT_DICT[lang][STATUS_TEXT]}: {wrap_tags(status)}\n',
+        f'\U0001F916  @cardel_elonbot \U000000A9',
+        f'\U0001F6E1  cardel online \U00002122',
+    ]
 
     if hide_user_data:
-        layout = f'\U0001F4CD  {NEW_CARGO_LAYOUT_DICT[lang][FROM_TEXT]}: {wrap_tags(from_district_name, from_region_name)}\n' \
-                 f'\U0001F3C1  {NEW_CARGO_LAYOUT_DICT[lang][TO_TEXT]}: {wrap_tags(to_district_name, to_region_name)}\n\n' \
-                 f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][WEIGHT_TEXT]}: {wrap_tags(weight)}\n' \
-                 f'\U0001F4E6  {NEW_CARGO_LAYOUT_DICT[lang][VOLUME_TEXT]}: {wrap_tags(volume)}\n' \
-                 f'\U0001F5D2  {NEW_CARGO_LAYOUT_DICT[lang][DEFINITION_TEXT]}: {wrap_tags(definition)}\n' \
-                 f'\U0001F4C6  {NEW_CARGO_LAYOUT_DICT[lang][DATE_TEXT]}: {wrap_tags(date)}\n' \
-                 f'\U0001F553  {NEW_CARGO_LAYOUT_DICT[lang][TIME_TEXT]}: {wrap_tags(time)}\n\n' \
-                 f"{emoji}  {NEW_CARGO_LAYOUT_DICT[lang][STATUS_TEXT]}: {wrap_tags(status)}\n\n" \
-                 f"\U0001F916  @cardel_elonbot \U000000A9\n" \
-                 f"\U0001F6E1  cardel online \U00002122"
+        layout.pop(7)
+        layout.pop(7)
+        layout.pop(7)
+
+    if ID in cargo_data:
+        layout.append(f'\n\U0001F194 {cargo_data[ID]}')
+
+    layout = '\n'.join(layout)
 
     return layout
 
