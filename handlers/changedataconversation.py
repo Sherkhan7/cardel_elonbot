@@ -17,14 +17,12 @@ NEW_NAME, NEW_SURNAME = ('new_name', 'new_surname')
 
 
 def change_data_callback(update: Update, context: CallbackContext):
+    user_data = context.user_data
+    set_user_data(update.effective_user.id, user_data)
+    user = user_data['user_data']
+
     callback_query = update.callback_query
     data = callback_query.data
-
-    bot_data = context.bot_data
-
-    # set bot_data[update.effective_user.id] -> dict
-    set_user_data(update.effective_user.id, bot_data)
-    user = bot_data[update.effective_user.id]
 
     if data == BUTTONS_DATA_DICT[3] or data == BUTTONS_DATA_DICT[4]:
 
@@ -69,10 +67,11 @@ def change_data_callback(update: Update, context: CallbackContext):
 
 
 def change_name_callback(update: Update, context: CallbackContext):
-    name = update.message.text
+    user_data = context.user_data
+    set_user_data(update.effective_user.id, user_data)
+    user = user_data['user_data']
 
-    bot_data = context.bot_data
-    user = context.bot_data[update.effective_user.id]
+    name = update.message.text
 
     if name == '/cancel' or name == '/menu' or name == '/start':
 
@@ -93,7 +92,7 @@ def change_name_callback(update: Update, context: CallbackContext):
 
         if result == 'updated':
 
-            bot_data[update.effective_user.id][NAME] = name
+            user_data['user_data'][NAME] = name
 
             if user[LANG] == LANGS[0]:
                 text = "Ismingiz o'zgartirildi"
@@ -128,10 +127,11 @@ def change_name_callback(update: Update, context: CallbackContext):
 
 
 def change_surname_callback(update: Update, context: CallbackContext):
-    surname = update.message.text
+    user_data = context.user_data
+    set_user_data(update.effective_user.id, user_data)
+    user = user_data['user_data']
 
-    bot_data = context.bot_data
-    user = context.bot_data[update.effective_user.id]
+    surname = update.message.text
 
     if surname == '/cancel' or surname == '/menu' or surname == '/start':
 
@@ -152,7 +152,7 @@ def change_surname_callback(update: Update, context: CallbackContext):
 
         if result == 'updated':
 
-            bot_data[update.effective_user.id][SURNAME] = surname
+            user_data['user_data'][SURNAME] = surname
 
             if user[LANG] == LANGS[0]:
                 text = "Familyangiz o'zgatrilildi"
