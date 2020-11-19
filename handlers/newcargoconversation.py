@@ -29,6 +29,7 @@ def new_cargo_callback(update: Update, context: CallbackContext):
     user_data = context.user_data
     set_user_data(update.effective_user.id, user_data)
     user = user_data['user_data']
+    user_data[USER_INPUT_DATA] = dict()
 
     callback_query = update.callback_query
 
@@ -87,7 +88,6 @@ def new_cargo_callback(update: Update, context: CallbackContext):
         cargo_data[MESSAGE_ID] = message.message_id
         cargo_data[STATE] = CONFIRMATION
 
-        user_data[USER_INPUT_DATA] = dict()
         user_data[USER_INPUT_DATA].update(cargo_data)
 
         return CONFIRMATION
