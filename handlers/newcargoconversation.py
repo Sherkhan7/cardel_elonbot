@@ -41,6 +41,7 @@ def new_cargo_callback(update: Update, context: CallbackContext):
         cargo_data[USERNAME] = user[USERNAME]
         cargo_data[NAME] = user[NAME]
         cargo_data[SURNAME] = user[SURNAME]
+        cargo_data[STATE] = CONFIRMATION
         cargo_data.pop('shipping_datetime')
         cargo_data.pop('id')
         cargo_data.pop('created_at')
@@ -86,8 +87,6 @@ def new_cargo_callback(update: Update, context: CallbackContext):
             message = callback_query.message.reply_html(layout, reply_markup=inline_keyboard)
 
         cargo_data[MESSAGE_ID] = message.message_id
-        cargo_data[STATE] = CONFIRMATION
-
         user_data[USER_INPUT_DATA].update(cargo_data)
 
         return CONFIRMATION
