@@ -70,7 +70,7 @@ def get_new_cargo_layout(cargo_data, lang, hide_user_data=None):
         layout.pop(7)
 
     if ID in cargo_data:
-        layout.append(f'\n\U0001F194 {cargo_data[ID]}')
+        layout.append(f'\n\U0001F194 {str(cargo_data[ID]).zfill(4)}')
 
     layout = '\n'.join(layout)
 
