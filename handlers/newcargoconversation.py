@@ -6,7 +6,7 @@ from filters import phone_number_filter
 from handlers.editconversation import edit_conversation_handler
 from helpers import set_user_data, wrap_tags
 from inlinekeyboards import InlineKeyboard
-from DB import insert_cargo, get_cargo_by_id
+from DB import insert_cargo, get_cargo_by_id, update_cargo_post_id
 from layouts import get_new_cargo_layout, get_phone_number_layout
 from replykeyboards import ReplyKeyboard
 from config import GROUP_ID
@@ -979,38 +979,41 @@ def confirmation_callback(update: Update, context: CallbackContext):
             inline_keyboard = None
 
         user_data[USER_INPUT_DATA][STATE] = 'opened'
-        layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
-        layout_2 = get_new_cargo_layout(user_data[USER_INPUT_DATA], 'cy')
+        cargo_data_for_insert = dict(user_data[USER_INPUT_DATA])
+        cargo_data_for_insert.pop(NAME)
+        cargo_data_for_insert.pop(SURNAME)
+        cargo_data_for_insert.pop(USERNAME)
+        cargo_data_for_insert.pop(MESSAGE_ID)
+        insert_cargo_id = insert_cargo(cargo_data_for_insert)
 
-        if user_data[USER_INPUT_DATA][PHOTO]:
-            message = context.bot.send_photo(GROUP_ID, user_data[USER_INPUT_DATA][PHOTO].get('file_id'),
-                                             layout_2, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
+        if insert_cargo_id:
+            user_data[USER_INPUT_DATA][ID] = insert_cargo_id
+
+            layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
+            layout_2 = get_new_cargo_layout(user_data[USER_INPUT_DATA], 'cy')
+
+            if user_data[USER_INPUT_DATA][PHOTO]:
+                message = context.bot.send_photo(GROUP_ID, user_data[USER_INPUT_DATA][PHOTO].get('file_id'),
+                                                 layout_2, reply_markup=inline_keyboard, parse_mode=ParseMode.HTML)
+
+            else:
+                message = context.bot.send_message(GROUP_ID, layout_2, reply_markup=inline_keyboard,
+                                                   parse_mode=ParseMode.HTML)
+
+            update_cargo_post_id(message.message_id, insert_cargo_id)
 
         else:
-            message = context.bot.send_message(GROUP_ID, layout_2, reply_markup=inline_keyboard,
-                                               parse_mode=ParseMode.HTML)
-
-        user_data[USER_INPUT_DATA][POST_ID] = message.message_id
-        user_data[USER_INPUT_DATA].pop(NAME)
-        user_data[USER_INPUT_DATA].pop(SURNAME)
-        user_data[USER_INPUT_DATA].pop(USERNAME)
-        user_data[USER_INPUT_DATA].pop(MESSAGE_ID)
-        insert_result = insert_cargo(dict(user_data[USER_INPUT_DATA]))
-
-        if insert_result:
-            reply_keyboard = ReplyKeyboard(menu_keyboard, user[LANG]).get_keyboard()
-            callback_query.message.reply_text(text, reply_markup=reply_keyboard)
-
-        else:
-            delete_value = context.bot.delete_message(GROUP_ID, user_data[USER_INPUT_DATA][POST_ID])
-            print('IS MESSAGE DELETED FROM THE GROUP ? Answer: ', delete_value)
 
             layout = 'ERROR'
+            text = layout
 
         if user_data[USER_INPUT_DATA][PHOTO]:
             callback_query.edit_message_caption(layout, parse_mode=ParseMode.HTML)
         else:
             callback_query.edit_message_text(layout, parse_mode=ParseMode.HTML)
+
+        reply_keyboard = ReplyKeyboard(menu_keyboard, user[LANG]).get_keyboard()
+        callback_query.message.reply_text(text, reply_markup=reply_keyboard)
 
         del user_data[USER_INPUT_DATA]
         state = ConversationHandler.END
