@@ -182,7 +182,7 @@ def insert_cargo(cargo_data):
             # cursor.execute("SELECT * FROM testdb.cargoes WHERE id = %s", cursor.lastrowid)
             # cargo = cursor.fetchone()
 
-    print(cursor.rowcount)
+    print(f'{cursor.rowcount}: {cursor.lastrowid}')
 
     return cursor.lastrowid
 
@@ -219,5 +219,12 @@ def update_cargo_status(cargo_id, status):
         value = 'updated'
 
     return value
+
+
+def update_cargo_post_id(post_id, cargo_id):
+    with closing(get_connection()) as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(f"UPDATE testdb.{cargoes_table_name} SET post_id = %s WHERE id = %s", (post_id, cargo_id))
+            connection.commit()
 
 # pprint(get_user_cargoes(2))
