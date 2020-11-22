@@ -2,7 +2,7 @@ import pymysql.cursors
 from contextlib import closing
 import json
 import datetime
-from config.config import DB_CONFIG
+from config import DB_CONFIG
 from pprint import pprint
 
 

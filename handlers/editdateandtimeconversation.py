@@ -173,6 +173,8 @@ edit_date_and_time_conversation_handler = ConversationHandler(
     map_to_parent={
         'edit': 'edit',
         'edit_date_and_time': 'edit_date_and_time'
-    }
+    },
+    persistent=True,
+    name='edit_date_and_time_conversation'
 )
 # (0[1-9]|[12][0-9]|3[01])[-](0[1-9]|1[012])[-](20\d\d)

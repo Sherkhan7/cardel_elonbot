@@ -24,39 +24,37 @@ def change_data_callback(update: Update, context: CallbackContext):
     callback_query = update.callback_query
     data = callback_query.data
 
-    if data == BUTTONS_DATA_DICT[3] or data == BUTTONS_DATA_DICT[4]:
+    if data == BUTTONS_DATA_DICT[3]:
 
-        if data == BUTTONS_DATA_DICT[3]:
+        if user[LANG] == LANGS[0]:
+            text = "Ismni o'zgartirish"
+            reply_text = "Yangi ismningizni yuboring"
 
-            if user[LANG] == LANGS[0]:
-                text = "Ismni o'zgartirish"
-                reply_text = "Yangi ismningizni yuboring"
+        if user[LANG] == LANGS[1]:
+            text = "Изменить имя"
+            reply_text = "Отправьте свое новое имя"
 
-            if user[LANG] == LANGS[1]:
-                text = "Изменить имя"
-                reply_text = "Отправьте свое новое имя"
+        if user[LANG] == LANGS[2]:
+            text = "Исмни ўзгартириш"
+            reply_text = "Янги исмнингизни юборинг"
 
-            if user[LANG] == LANGS[2]:
-                text = "Исмни ўзгартириш"
-                reply_text = "Янги исмнингизни юборинг"
+        state = NEW_NAME
 
-            state = NEW_NAME
+    if data == BUTTONS_DATA_DICT[4]:
 
-        if data == BUTTONS_DATA_DICT[4]:
+        if user[LANG] == LANGS[0]:
+            text = "Familyani o'zgartirish"
+            reply_text = "Yangi familyangizni yuboring"
 
-            if user[LANG] == LANGS[0]:
-                text = "Familyani o'zgartirish"
-                reply_text = "Yangi familyangizni yuboring"
+        if user[LANG] == LANGS[1]:
+            text = "Изменить фамилию"
+            reply_text = "Отправьте вашу новую фамилию"
 
-            if user[LANG] == LANGS[1]:
-                text = "Изменить фамилию"
-                reply_text = "Отправьте вашу новую фамилию"
+        if user[LANG] == LANGS[2]:
+            text = "Фамиляни ўзгартириш"
+            reply_text = "Янги фамилянгизни юборинг"
 
-            if user[LANG] == LANGS[2]:
-                text = "Фамиляни ўзгартириш"
-                reply_text = "Янги фамилянгизни юборинг"
-
-            state = NEW_SURNAME
+        state = NEW_SURNAME
 
     reply_text = f'{wrap_tags(reply_text)} :'
 
@@ -199,4 +197,7 @@ changedataconversation_handler = ConversationHandler(
     },
     fallbacks=[
         # CommandHandler('cancel', do_cancel)
-    ], )
+    ],
+    persistent=True,
+    name='changedata_conversation'
+)

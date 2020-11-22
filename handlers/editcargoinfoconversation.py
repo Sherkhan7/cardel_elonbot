@@ -761,5 +761,7 @@ edit_cargo_info_conversation_handler = ConversationHandler(
     map_to_parent={
         'edit': 'edit',
         'edit_cargo_info': 'edit_cargo_info'
-    }
+    },
+    persistent=True,
+    name='edit_cargo_info_conversation'
 )

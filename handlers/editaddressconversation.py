@@ -570,7 +570,8 @@ def edit_to_location_callback(update: Update, context: CallbackContext):
             layout = get_new_cargo_layout(user_data[USER_INPUT_DATA], user[LANG])
             inline_keyboard = InlineKeyboard(edit_keyboard, user[LANG]).get_keyboard()
 
-            context.bot.edit_message_reply_markup(update.effective_chat.id, user_data[USER_INPUT_DATA].pop('message_id'))
+            context.bot.edit_message_reply_markup(update.effective_chat.id,
+                                                  user_data[USER_INPUT_DATA].pop('message_id'))
 
             if user_data[USER_INPUT_DATA][PHOTO]:
                 message = update.message.reply_photo(user_data[USER_INPUT_DATA][PHOTO]['file_id'], caption=layout,
@@ -631,5 +632,7 @@ edit_address_conversation_handler = ConversationHandler(
     map_to_parent={
         'edit': 'edit',
         'edit_address': 'edit_address'
-    }
+    },
+    persistent=True,
+    name='edit_address_conversation'
 )

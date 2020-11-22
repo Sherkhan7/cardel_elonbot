@@ -6,6 +6,9 @@ def set_user_data(user_id, user_data):
 
     if not value:
         value = get_user(user_id)
+        if value:
+            value.pop('created_at')
+            value.pop('updated_at')
         user_data['user_data'] = value
 
 

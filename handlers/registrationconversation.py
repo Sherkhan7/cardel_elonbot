@@ -21,7 +21,7 @@ FULLNAME, LANG = ('fullname', 'lang')
 
 def do_command(update: Update, context: CallbackContext):
     # with open('update.json', 'w') as update_file:
-    #
+    #     update_file.write(update.to_json())
     user_data = context.user_data
     set_user_data(update.effective_user.id, user_data)
     user = user_data['user_data']
@@ -216,4 +216,7 @@ registration_conversation_handler = ConversationHandler(
     },
     fallbacks=[
         # CommandHandler('cancel', do_cancel)
-    ], )
+    ],
+    persistent=True,
+    name='registration_conversation'
+)

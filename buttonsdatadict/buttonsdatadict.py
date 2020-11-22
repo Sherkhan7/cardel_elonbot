@@ -8,14 +8,4 @@ BUTTONS_DATA_DICT = {
     7: 'uz',
     8: 'ru',
     9: 'cy',
-    'regions': {
-        1: 'region_id_1', 19: 'region_id_19',
-        33: 'region_id_33', 47: 'region_id_47',
-        63: 'region_id_63', 74: 'region_id_74',
-        87: 'region_id_87', 104: 'region_id_104',
-        119: 'region_id_119', 132: 'region_id_132',
-        144: 'region_id_144', 167: 'region_id_167',
-        187: 'region_id_187', 201: 'region_id_201'
-    }
-
 }

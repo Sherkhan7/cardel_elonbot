@@ -3,3 +3,5 @@
 config/
 __pycache__/
 DB/test.py
+my_pickle_conversations
+my_pickle_user_data

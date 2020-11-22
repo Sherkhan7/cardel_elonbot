@@ -19,8 +19,6 @@ from globalvariables import *
 import datetime
 import logging
 
-# import json
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 logger = logging.getLogger()
 
@@ -1101,12 +1099,6 @@ def txt_callback(update: Update, context: CallbackContext):
 
 
 def get_skip_keyboard(state):
-    # if lang == LANGS[0]:
-    #     button_text = 'keyingisi'
-    #
-    # if lang == LANGS[1]:
-    #     button_text = 'следующий'
-
     if state == TO_LOCATION:
         data = 'skip_to_location'
 
@@ -1316,4 +1308,6 @@ new_cargo_conversation_handler = ConversationHandler(
     },
 
     fallbacks=[],
+    persistent=True,
+    name='newcargo_conversation',
 )

@@ -84,5 +84,7 @@ edit_conversation_handler = ConversationHandler(
     map_to_parent={
         'confirmation': 'confirmation',
         'edit': 'edit'
-    }
+    },
+    persistent=True,
+    name='edit_conversation'
 )
