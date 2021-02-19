@@ -1,7 +1,13 @@
 from telegram.ext import Updater, PicklePersistence
 from config import TOKEN
-from handlers import (message_handler, inline_keyboard_handler, registration_conversation_handler,
-                      changedataconversation_handler, new_cargo_conversation_handler)
+from handlers import (
+    message_handler,
+    inline_keyboard_handler,
+    registration_conversation_handler,
+    changedataconversation_handler,
+    new_cargo_conversation_handler,
+    error_handler
+)
 
 
 def main():
@@ -18,6 +24,8 @@ def main():
     updater.dispatcher.add_handler(message_handler)
 
     updater.dispatcher.add_handler(inline_keyboard_handler)
+
+    updater.dispatcher.add_error_handler(error_handler)
 
     # updater.start_polling()
     # updater.idle()

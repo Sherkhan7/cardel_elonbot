@@ -1,15 +1,12 @@
-import logging
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ParseMode
 from telegram.ext import ConversationHandler, CallbackQueryHandler, CallbackContext, MessageHandler, Filters
+
 from filters import phone_number_filter
 from inlinekeyboards import InlineKeyboard
 from languages import LANGS
 from layouts import get_new_cargo_layout, get_phone_number_layout
 from inlinekeyboards.inlinekeyboardvariables import *
 from globalvariables import *
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-logger = logging.getLogger()
 
 
 def edit_cargo_info_callback(update: Update, context: CallbackContext):

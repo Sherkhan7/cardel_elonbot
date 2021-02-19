@@ -1,2 +1,2 @@
-python-telegram-bot==13.0
-PyMySQL==0.10.1
+python-telegram-bot==13.2
+PyMySQL==1.0.2

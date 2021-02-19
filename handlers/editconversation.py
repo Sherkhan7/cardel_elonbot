@@ -1,6 +1,6 @@
-import logging
 from telegram import Update, InlineKeyboardButton
 from telegram.ext import ConversationHandler, CallbackQueryHandler, CallbackContext
+
 from handlers.editaddressconversation import edit_address_conversation_handler
 from handlers.editcargoinfoconversation import edit_cargo_info_conversation_handler
 from handlers.editdateandtimeconversation import edit_date_and_time_conversation_handler
@@ -8,9 +8,6 @@ from inlinekeyboards import InlineKeyboard
 from languages import LANGS
 from inlinekeyboards.inlinekeyboardvariables import *
 from globalvariables import *
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-logger = logging.getLogger()
 
 
 def edit_callback(update: Update, context: CallbackContext):
