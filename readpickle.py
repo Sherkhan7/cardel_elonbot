@@ -1,20 +1,16 @@
 import pickle
+import sys
 from pprint import pp
 
 
 def read_data():
-    filename = 'my_pickle'
-    user_data_file = open(f'{filename}_user_data', 'rb')
-    conversations_file = open(f'{filename}_conversations', 'rb')
-
-    user_data = pickle.load(user_data_file)
-    conversations = pickle.load(conversations_file)
+    filename = f'my_pickle_{sys.argv[-1]}'
+    loaded_file = pickle.load(open(f'{filename}', 'rb'))
 
     pp(''.ljust(100, '-'))
-    pp(user_data)
-    pp(''.ljust(100, '-'))
-    pp(conversations)
+    pp(loaded_file)
     pp(''.ljust(100, '-'))
 
 
-read_data()
+if __name__ == '__main__':
+    read_data()
