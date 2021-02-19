@@ -1,6 +1,14 @@
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, KeyboardButton, \
-    ReplyKeyboardRemove, ParseMode
+from telegram import (
+    Update,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardRemove,
+    ParseMode
+)
 from telegram.ext import MessageHandler, ConversationHandler, CallbackQueryHandler, CallbackContext, Filters
+
 from buttonsdatadict import BUTTONS_DATA_DICT
 from filters import phone_number_filter
 from handlers.editconversation import edit_conversation_handler
@@ -19,7 +27,6 @@ from globalvariables import *
 import datetime
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 logger = logging.getLogger()
 
 

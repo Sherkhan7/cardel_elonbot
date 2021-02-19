@@ -1,5 +1,6 @@
 from telegram import Update, ParseMode, InlineKeyboardButton
 from telegram.ext import CallbackQueryHandler, CallbackContext
+
 from replykeyboards import ReplyKeyboard
 from buttonsdatadict import BUTTONS_DATA_DICT
 from DB.main import update_user_info, get_cargo_by_id, update_cargo_status, get_user_cargoes
@@ -13,10 +14,6 @@ from inlinekeyboards.inlinekeyboardvariables import *
 from globalvariables import *
 from replykeyboards.replykeyboardvariables import *
 import re
-import logging
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-logger = logging.getLogger()
 
 
 def main_inline_keyboard_callback(update: Update, context: CallbackContext):

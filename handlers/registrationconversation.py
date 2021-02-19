@@ -13,7 +13,6 @@ from inlinekeyboards.inlinekeyboardvariables import *
 from helpers import wrap_tags
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
 logger = logging.getLogger()
 
 FULLNAME, LANG = ('fullname', 'lang')
@@ -218,5 +217,6 @@ registration_conversation_handler = ConversationHandler(
         # CommandHandler('cancel', do_cancel)
     ],
     persistent=True,
+
     name='registration_conversation'
 )

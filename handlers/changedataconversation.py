@@ -1,5 +1,6 @@
 from telegram import Update, ParseMode
 from telegram.ext import MessageHandler, ConversationHandler, CallbackQueryHandler, CallbackContext, Filters
+
 from inlinekeyboards import InlineKeyboard
 from buttonsdatadict import BUTTONS_DATA_DICT
 from helpers import set_user_data
@@ -8,10 +9,6 @@ from DB import update_user_info
 from languages import LANGS
 from inlinekeyboards.inlinekeyboardvariables import *
 from globalvariables import *
-import logging
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(name)s | %(levelname)s | %(message)s')
-logger = logging.getLogger()
 
 NEW_NAME, NEW_SURNAME = ('new_name', 'new_surname')
 
